@@ -1,14 +1,18 @@
 # ⚡ AI Studio Pro
-
-> A professional, full-stack AI workspace with 17 tools — built with Next.js, FastAPI, and Groq.
-
-**Live Demo → [AI STUDIO PRO +](https://ai-studio-pro-nu.vercel.app)**
+<div align="center">
 
 ![AI Studio Pro](https://img.shields.io/badge/Status-Live-brightgreen?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=flat-square&logo=fastapi)
 ![Groq](https://img.shields.io/badge/Powered_by-Groq-orange?style=flat-square)
+
+ **Full-stack AI workspace with 17 tools — built with Next.js, FastAPI, and Groq.**
+ 
+**Live Demo → [AI STUDIO PRO +](https://ai-studio-pro-nu.vercel.app)**
+
+
+</div>
 
 ---
 
