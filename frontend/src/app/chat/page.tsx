@@ -10,20 +10,25 @@ interface Msg { role: 'user' | 'assistant'; content: string; }
 
 const MODELS = [
   { v: 'llama-3.3-70b-versatile', l: 'Llama 3.3 70B' },
-  { v: 'llama-3.1-8b-instant', l: 'Llama 3.1 8B (Fast)' },
-  { v: 'mixtral-8x7b-32768', l: 'Mixtral 8x7B' },
+  { v: 'llama-3.1-8b-instant',    l: 'Llama 3.1 8B · Fast' },
+  { v: 'mixtral-8x7b-32768',      l: 'Mixtral 8x7B' },
 ];
-const STARTERS = ['Explain quantum computing simply', 'Help me debug my Python code', 'Write a LinkedIn post about AI', 'Best practices for React apps'];
+const STARTERS = [
+  'Explain quantum computing simply',
+  'Help me debug my Python code',
+  'Write a LinkedIn post about AI',
+  'Best practices for React apps',
+];
 
 export default function ChatPage() {
   const router = useRouter();
   const { user, fetchUser } = useAuthStore();
-  const [msgs, setMsgs] = useState<Msg[]>([]);
-  const [input, setInput] = useState('');
+  const [msgs, setMsgs]     = useState<Msg[]>([]);
+  const [input, setInput]   = useState('');
   const [loading, setLoading] = useState(false);
-  const [model, setModel] = useState('llama-3.3-70b-versatile');
+  const [model, setModel]   = useState('llama-3.3-70b-versatile');
   const bottomRef = useRef<HTMLDivElement>(null);
-  const taRef = useRef<HTMLTextAreaElement>(null);
+  const taRef     = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => { if (!user) fetchUser().catch(() => router.push('/login')); }, [user]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, loading]);
@@ -51,53 +56,49 @@ export default function ChatPage() {
 
   return (
     <AppLayout>
-      <div className="chat-layout">
-        {/* Topbar */}
-        <div className="chat-topbar">
+      <div className="chat-shell">
+        {/* Top bar */}
+        <div className="chat-bar">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 13, color: 'var(--c-t2)' }}>Model</span>
-            <select className="ai-select" value={model} onChange={e => setModel(e.target.value)}
+            <span style={{ fontSize: 12, color: 'var(--tx2)', fontWeight: 600 }}>Model</span>
+            <select className="fi-sel" value={model} onChange={e => setModel(e.target.value)}
               style={{ width: 'auto', padding: '5px 10px', fontSize: 12, borderRadius: 8 }}>
               {MODELS.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}
             </select>
           </div>
           {msgs.length > 0 && (
-            <button className="ai-btn ai-btn-ghost" style={{ fontSize: 13, padding: '6px 14px' }} onClick={() => setMsgs([])}>
+            <button className="btn btn-g" style={{ fontSize: 12, padding: '6px 14px' }} onClick={() => setMsgs([])}>
               New chat
             </button>
           )}
         </div>
 
         {/* Messages */}
-        <div className="chat-messages">
+        <div className="chat-feed">
           {msgs.length === 0 ? (
-            <div className="dash-hero" style={{ paddingTop: 80 }}>
-              <div style={{ fontSize: 32, marginBottom: 14 }}>⚡</div>
-              <div className="dash-greeting">What can I help with?</div>
-              <p className="dash-sub">Powered by Groq — the fastest AI inference</p>
-              <div className="chips-row" style={{ marginTop: 0 }}>
+            <div className="chat-empty">
+              <div className="chat-empty-icon au">⚡</div>
+              <div className="chat-empty-h au au1">What can I help with?</div>
+              <div className="chat-empty-s au au2">Powered by Groq — the fastest AI inference</div>
+              <div className="sq au au3">
                 {STARTERS.map(s => (
-                  <button key={s} className="chip" onClick={() => send(s)}>{s}</button>
+                  <button key={s} className="sq-chip" onClick={() => send(s)}>{s}</button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="chat-msgs-inner">
+            <div className="chat-inner">
               {msgs.map((m, i) => (
-                <div key={i} className={`chat-msg ${m.role === 'user' ? 'chat-msg-user' : ''} anim-in`}>
-                  {m.role === 'assistant' && <div className="msg-avatar msg-avatar-ai">⚡</div>}
-                  <div className={`msg-content ${m.role === 'user' ? 'msg-content-user' : 'msg-content-ai'}`}>
-                    {m.content}
-                  </div>
-                  {m.role === 'user' && <div className="msg-avatar msg-avatar-user">{initials}</div>}
+                <div key={i} className={`cmsg ${m.role === 'user' ? 'cmsg-u' : ''} au`}>
+                  {m.role === 'assistant' && <div className="cav cav-ai">⚡</div>}
+                  <div className={m.role === 'user' ? 'cbub-u' : 'cbub-ai'}>{m.content}</div>
+                  {m.role === 'user' && <div className="cav cav-u">{initials}</div>}
                 </div>
               ))}
               {loading && (
-                <div className="chat-msg anim-in">
-                  <div className="msg-avatar msg-avatar-ai">⚡</div>
-                  <div className="msg-content msg-content-ai">
-                    <div className="dot-pulse"><span/><span/><span/></div>
-                  </div>
+                <div className="cmsg au">
+                  <div className="cav cav-ai">⚡</div>
+                  <div className="cbub-ai"><div className="tdots"><span/><span/><span/></div></div>
                 </div>
               )}
               <div ref={bottomRef} />
@@ -106,18 +107,21 @@ export default function ChatPage() {
         </div>
 
         {/* Input */}
-        <div className="chat-input-wrap">
-          <div className="chat-input-inner">
+        <div className="chat-foot">
+          <div className="chat-box">
             <textarea ref={taRef} className="chat-ta" rows={1}
               placeholder="Message AI Studio…"
               value={input}
               onChange={e => { setInput(e.target.value); resize(); }}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
-            <button className="chat-send" onClick={() => send()} disabled={loading || !input.trim()}>
-              {loading ? <span className="spinner" style={{ width: 15, height: 15 }} /> : '↑'}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+            />
+            <button className="send" onClick={() => send()} disabled={loading || !input.trim()}>
+              {loading
+                ? <span className="spin" style={{ width: 15, height: 15 }} />
+                : '↑'}
             </button>
           </div>
-          <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--c-t3)', marginTop: 8 }}>
+          <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--tx3)', marginTop: 8 }}>
             Enter to send · Shift+Enter for new line
           </p>
         </div>
