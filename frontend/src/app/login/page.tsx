@@ -8,7 +8,8 @@ import toast from 'react-hot-toast';
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuthStore();
-  const [u, setU] = useState(''); const [p, setP] = useState('');
+  const [u, setU] = useState('');
+  const [p, setP] = useState('');
   const [loading, setLoading] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
@@ -21,32 +22,37 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-bg">
-      <div className="auth-card">
-        <div className="auth-logo-wrap anim-in">
-          <div className="auth-logo-icon">⚡</div>
-          <div className="auth-title">Welcome back</div>
-          <div className="auth-sub">Sign in to AI Studio Pro</div>
+    <div className="auth-wrap">
+      <div className="auth-box">
+        <div className="auth-logo au">
+          <div className="auth-lmark">⚡</div>
+          <div className="auth-h">Welcome back</div>
+          <div className="auth-s">Sign in to AI Studio Pro</div>
         </div>
-        <div className="ai-card anim-in anim-in-d1" style={{ gap: 0 }}>
-          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div className="field-wrap">
-              <label className="field-label">Username</label>
-              <input className="ai-input" type="text" placeholder="Enter username" value={u} onChange={e => setU(e.target.value)} autoFocus />
+
+        <div className="auth-glass au au1">
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="field">
+              <label className="flabel">Username</label>
+              <input className="fi" type="text" placeholder="Enter your username"
+                value={u} onChange={e => setU(e.target.value)} autoFocus />
             </div>
-            <div className="field-wrap">
-              <label className="field-label">Password</label>
-              <input className="ai-input" type="password" placeholder="••••••••" value={p} onChange={e => setP(e.target.value)} />
+            <div className="field">
+              <label className="flabel">Password</label>
+              <input className="fi" type="password" placeholder="••••••••"
+                value={p} onChange={e => setP(e.target.value)} />
             </div>
-            <button className="ai-btn ai-btn-primary" type="submit" disabled={loading}
-              style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 4 }}>
-              {loading ? <><span className="spinner" /> Signing in…</> : 'Continue →'}
+            <button className="btn btn-p" type="submit" disabled={loading}
+              style={{ width: '100%', justifyContent: 'center', padding: '13px', marginTop: 4 }}>
+              {loading ? <><span className="spin" /> Signing in…</> : 'Continue →'}
             </button>
           </form>
         </div>
-        <p className="anim-in anim-in-d2" style={{ textAlign: 'center', fontSize: 13, color: 'var(--c-t2)', marginTop: 16 }}>
-          No account? <Link href="/register" style={{ color: 'var(--c-accent2)' }}>Create one free</Link>
-        </p>
+
+        <div className="auth-link-row au au2">
+          No account?{' '}
+          <Link href="/register">Create one free</Link>
+        </div>
       </div>
     </div>
   );
