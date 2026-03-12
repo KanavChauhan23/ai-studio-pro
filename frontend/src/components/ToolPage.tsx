@@ -34,7 +34,8 @@ export default function ToolPage({ title, description, icon, fields, apiEndpoint
     setVals(defs);
   }, []);
 
-  const set = (k: string) => (e: React.ChangeEvent<any>) => setVals(v => ({ ...v, [k]: e.target.value }));
+  const set = (k: string) => (e: React.ChangeEvent<any>) =>
+    setVals(v => ({ ...v, [k]: e.target.value }));
 
   const run = async () => {
     const missing = fields.find(f => f.type === 'textarea' && !vals[f.name]?.trim());
@@ -51,56 +52,53 @@ export default function ToolPage({ title, description, icon, fields, apiEndpoint
 
   const copy = () => {
     navigator.clipboard.writeText(result);
-    setCopied(true); toast.success('Copied!');
+    setCopied(true); toast.success('Copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Separate fields by type for layout
   const textareas = fields.filter(f => f.type === 'textarea');
   const selects   = fields.filter(f => f.type !== 'textarea');
 
   return (
     <AppLayout>
-      <div className="tool-page">
+      <div className="tp">
         {/* Header */}
-        <div className="tool-header anim-in">
-          {badge && <div className="tool-badge">✦ {badge}</div>}
-          <div className="tool-icon-wrap">{icon}</div>
-          <h1 className="tool-title">{title}</h1>
-          <p className="tool-desc">{description}</p>
+        <div className="tp-head au">
+          {badge && <div className="tp-pill">✦ {badge}</div>}
+          <div className="tp-icon">{icon}</div>
+          <h1 className="tp-title">{title}</h1>
+          <p className="tp-desc">{description}</p>
         </div>
 
-        <div className="tool-divider" />
+        <div className="tp-divider" />
 
         {/* Form */}
-        <div className="ai-card anim-in anim-in-d1" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {/* Textareas first */}
+        <div className="form-glass au au1">
           {textareas.map(f => (
-            <div key={f.name} className="field-wrap">
-              <label className="field-label">{f.label}</label>
+            <div key={f.name} className="field">
+              <label className="flabel">{f.label}</label>
               <textarea
-                className="ai-textarea"
+                className="fi-ta"
                 rows={f.rows ?? 5}
                 placeholder={f.placeholder}
                 value={vals[f.name] ?? ''}
                 onChange={set(f.name)}
               />
-              {f.hint && <span className="field-hint">{f.hint}</span>}
+              {f.hint && <span style={{ fontSize: 11.5, color: 'var(--tx3)', marginTop: 2 }}>{f.hint}</span>}
             </div>
           ))}
 
-          {/* Select/input row */}
           {selects.length > 0 && (
-            <div className={selects.length >= 3 ? 'fields-grid-3' : selects.length === 2 ? 'fields-grid-2' : ''}>
+            <div className={selects.length >= 3 ? 'fgrid3' : selects.length === 2 ? 'fgrid2' : ''}>
               {selects.map(f => (
-                <div key={f.name} className="field-wrap">
-                  <label className="field-label">{f.label}</label>
+                <div key={f.name} className="field">
+                  <label className="flabel">{f.label}</label>
                   {f.type === 'select' ? (
-                    <select className="ai-select" value={vals[f.name] ?? ''} onChange={set(f.name)}>
+                    <select className="fi-sel" value={vals[f.name] ?? ''} onChange={set(f.name)}>
                       {f.options?.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                     </select>
                   ) : (
-                    <input className="ai-input" type="text" placeholder={f.placeholder}
+                    <input className="fi" type="text" placeholder={f.placeholder}
                       value={vals[f.name] ?? ''} onChange={set(f.name)} />
                   )}
                 </div>
@@ -109,10 +107,10 @@ export default function ToolPage({ title, description, icon, fields, apiEndpoint
           )}
 
           <div>
-            <button className="ai-btn ai-btn-primary" onClick={run} disabled={loading}>
+            <button className="btn btn-p" onClick={run} disabled={loading}>
               {loading
-                ? <><span className="spinner" /> Generating…</>
-                : <><span>{icon}</span> Generate</>
+                ? <><span className="spin" /> Generating…</>
+                : <><span style={{ fontSize: 16 }}>{icon}</span> Generate</>
               }
             </button>
           </div>
@@ -120,17 +118,17 @@ export default function ToolPage({ title, description, icon, fields, apiEndpoint
 
         {/* Result */}
         {result && (
-          <div className="result-wrap anim-in">
-            <div className="result-topbar">
-              <div className="result-label">
-                <div className="result-dot" />
-                Response
+          <div className="result-box">
+            <div className="result-top">
+              <div className="result-lbl">
+                <div className="rdot" />
+                AI Response
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="ai-btn ai-btn-ghost" style={{ fontSize: 12, padding: '5px 12px' }} onClick={copy}>
+                <button className="btn btn-g" style={{ fontSize: 12, padding: '5px 12px' }} onClick={copy}>
                   {copied ? '✓ Copied' : '⎘ Copy'}
                 </button>
-                <button className="ai-btn-icon" onClick={() => setResult('')} title="Clear">✕</button>
+                <button className="btn btn-i" onClick={() => setResult('')} title="Clear">✕</button>
               </div>
             </div>
             <div className="result-body">{result}</div>
