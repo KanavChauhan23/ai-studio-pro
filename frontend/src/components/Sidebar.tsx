@@ -1,55 +1,98 @@
-"use client";
+'use client';
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuthStore } from '@/lib/auth';
 
-import Link from "next/link";
+const NAV_TOP = [
+  { ic: '🏠', lb: 'Dashboard', href: '/dashboard' },
+  { ic: '✏️', lb: 'New Chat',  href: '/chat' },
+];
 
-export default function Sidebar({ open, setOpen }: any) {
+const TOOLS = [
+  { ic: '💬', lb: 'AI Chat',           href: '/chat' },
+  { ic: '🖼️', lb: 'Image Generator',   href: '/generate/image' },
+  { ic: '📝', lb: 'Text Generator',    href: '/generate/text' },
+  { ic: '💻', lb: 'Code Generator',    href: '/generate/code' },
+  { ic: '🐛', lb: 'Code Debugger',     href: '/tools/debug' },
+  { ic: '🌐', lb: 'Website Builder',   href: '/tools/website' },
+  { ic: '📄', lb: 'Doc Summarizer',    href: '/tools/summarize-doc' },
+  { ic: '📋', lb: 'Resume Builder',    href: '/tools/resume' },
+  { ic: '✨', lb: 'Prompt Improver',   href: '/tools/improve-prompt' },
+  { ic: '🎬', lb: 'YouTube Script',    href: '/tools/youtube' },
+  { ic: '✏️', lb: 'Content Rewriter',  href: '/tools/rewrite' },
+  { ic: '🌍', lb: 'Translator',        href: '/tools/translate' },
+  { ic: '📧', lb: 'Email Writer',      href: '/tools/email' },
+  { ic: '🔍', lb: 'Web Search AI',     href: '/tools/web-search' },
+  { ic: '📚', lb: 'Study Notes',       href: '/tools/study-notes' },
+  { ic: '📱', lb: 'Social Posts',      href: '/tools/social' },
+  { ic: '📰', lb: 'Text Summarizer',   href: '/tools/summarize' },
+];
 
-  const items = [
-    { icon: "🏠", label: "Dashboard", href: "/dashboard" },
-    { icon: "💬", label: "AI Chat", href: "/chat" },
-    { icon: "🖼️", label: "Image Generator", href: "/generate/image" },
-    { icon: "💻", label: "Code Generator", href: "/generate/code" },
-    { icon: "🌐", label: "Website Builder", href: "/tools/website" },
-    { icon: "✏️", label: "Rewrite Content", href: "/tools/rewrite" },
-    { icon: "🌍", label: "Translator", href: "/tools/translate" },
-    { icon: "📧", label: "Email Writer", href: "/tools/email" },
-    { icon: "📄", label: "Resume Builder", href: "/tools/resume" },
-    { icon: "📺", label: "YouTube Script", href: "/tools/youtube" },
-    { icon: "🔎", label: "Web Search", href: "/tools/web-search" },
-    { icon: "📚", label: "Study Notes", href: "/tools/study-notes" },
-    { icon: "📝", label: "Summarize Text", href: "/tools/summarize" },
-    { icon: "📑", label: "Summarize Document", href: "/tools/summarize-doc" },
-    { icon: "✨", label: "Prompt Improver", href: "/tools/improve-prompt" },
-    { icon: "📱", label: "Social Post", href: "/tools/social" },
-  ];
+export default function Sidebar() {
+  const pathname = usePathname();
+  const router   = useRouter();
+  const { user, logout } = useAuthStore();
+  const [col, setCol]   = useState(false);
+  const W = col ? 52 : 248;
+  const initials = (user?.username || 'AI').slice(0, 2).toUpperCase();
 
   return (
-    <>
-      {/* Overlay for mobile */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      <div
-        className={`fixed md:static z-50 top-0 left-0 h-screen w-64 bg-[#0f0f0f] border-r border-[#222] p-5 text-white transform transition-transform duration-300
-        ${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
-      >
-        <h1 className="text-xl font-bold mb-6">AI Studio</h1>
-
-        <div className="space-y-2 overflow-y-auto h-[90%]">
-          {items.map((item, i) => (
-            <Link key={i} href={item.href}>
-              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#1a1a1a] transition cursor-pointer">
-                <span>{item.icon}</span>
-                <span>{item.label}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
+    <aside className="sidebar" style={{ width: W }}>
+      {/* Header */}
+      <div className="sb-head">
+        {!col && (
+          <Link href="/dashboard" style={{ display:'flex', alignItems:'center', gap:10, textDecoration:'none', flex:1, minWidth:0 }}>
+            <div className="sb-mark">⚡</div>
+            <span className="sb-name">AI Studio Pro</span>
+          </Link>
+        )}
+        {col && <div className="sb-mark" style={{ margin:'0 auto' }}>⚡</div>}
+        {!col && (
+          <button className="btn btn-i" onClick={() => setCol(true)} title="Collapse" style={{ width:26, height:26, fontSize:12, flexShrink:0 }}>‹</button>
+        )}
+        {col && (
+          <button className="btn btn-i" onClick={() => setCol(false)} title="Expand"
+            style={{ width:26, height:26, fontSize:12, position:'absolute', right:4, top:18 }}>›</button>
+        )}
       </div>
-    </>
+
+      {/* Body */}
+      <div className="sb-body">
+        {NAV_TOP.map(n => (
+          <Link key={n.href} href={n.href}
+            className={`sbn ${pathname === n.href ? 'on' : ''}`}
+            title={col ? n.lb : undefined}>
+            <span className="sbn-ic">{n.ic}</span>
+            <span className="sbn-lbl">{n.lb}</span>
+          </Link>
+        ))}
+
+        <div className="sep" style={{ margin: '8px 0' }} />
+        {!col && <div className="sb-group-label">Tools</div>}
+
+        {TOOLS.map(t => (
+          <Link key={t.href} href={t.href}
+            className={`sbn ${pathname === t.href ? 'on' : ''}`}
+            title={col ? t.lb : undefined}>
+            <span className="sbn-ic">{t.ic}</span>
+            <span className="sbn-lbl">{t.lb}</span>
+          </Link>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div className="sb-foot">
+        <button className="sb-user" onClick={() => { logout(); router.push('/login'); }}>
+          <div className="sb-av">{initials}</div>
+          {!col && (
+            <div style={{ minWidth: 0 }}>
+              <div className="sb-uname">{user?.username || 'User'}</div>
+              <div className="sb-uplan">Free plan · Sign out</div>
+            </div>
+          )}
+        </button>
+      </div>
+    </aside>
   );
 }
