@@ -1,48 +1,69 @@
 import Link from 'next/link';
 
 const TOOLS = [
-  ['💬','AI Chat','Llama 3 & Mixtral'],['🖼️','Image Generator','Free, no credits'],
-  ['💻','Code Generator','Any language'],['🌐','Website Builder','HTML & React'],
-  ['📋','Resume Builder','+ Cover letter'],['✨','Prompt Improver','Better AI results'],
-  ['🎬','YouTube Script','Viral scripts'],['✏️','Content Rewriter','Any style'],
-  ['🌍','Translator','100+ languages'],['📧','Email Writer','Professional tone'],
-  ['📱','Social Posts','IG/LinkedIn/X'],['📚','Study Notes','Smart summaries'],
-  ['📰','Text Summarizer','Instant summary'],['🔍','Web Search AI','AI research'],
+  ['💬','AI Chat','Llama 3.3 · Mixtral'],
+  ['🖼️','Image Generator','Free · No credits'],
+  ['💻','Code Generator','Any language'],
+  ['🌐','Website Builder','HTML & React'],
+  ['📋','Resume Builder','+ Cover letter'],
+  ['✨','Prompt Improver','Better AI output'],
+  ['🎬','YouTube Script','Viral-ready'],
+  ['✏️','Content Rewriter','Any tone'],
+  ['🌍','Translator','100+ languages'],
+  ['📧','Email Writer','Professional'],
+  ['📱','Social Posts','IG·LinkedIn·X'],
+  ['📚','Study Notes','Smart summaries'],
+  ['📰','Text Summarizer','Instant results'],
+  ['🔍','Web Search AI','AI research'],
 ];
 
 export default function LandingPage() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--c-bg)', backgroundImage: 'radial-gradient(ellipse 70% 40% at 50% -10%, rgba(124,106,245,0.1), transparent)' }}>
+    <div className="land">
+      {/* Nav */}
       <nav className="land-nav">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,#7c6af5,#5b4fcf)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>⚡</div>
-          <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--c-t1)', letterSpacing: '-0.3px' }}>AI Studio Pro</span>
-        </div>
+        <Link href="/" className="land-logo">
+          <div className="land-logo-m">⚡</div>
+          <span className="land-logo-n">AI Studio Pro</span>
+        </Link>
         <div style={{ display: 'flex', gap: 10 }}>
-          <Link href="/login" className="ai-btn ai-btn-ghost" style={{ padding: '8px 16px', fontSize: 13 }}>Log in</Link>
-          <Link href="/register" className="ai-btn ai-btn-primary" style={{ padding: '8px 16px', fontSize: 13 }}>Get started →</Link>
+          <Link href="/login"    className="btn btn-g" style={{ padding: '8px 18px', fontSize: 13 }}>Log in</Link>
+          <Link href="/register" className="btn btn-p" style={{ padding: '8px 18px', fontSize: 13 }}>Get started →</Link>
         </div>
       </nav>
 
+      {/* Hero */}
       <div className="land-hero">
-        <div className="land-tag">✦ 17 AI tools · 100% free</div>
-        <h1 className="land-h1">Your complete<br />AI workspace</h1>
-        <p className="land-p">Chat, generate images, write code, build websites — all in one platform, powered by the fastest AI models available.</p>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/register" className="ai-btn ai-btn-primary" style={{ padding: '12px 26px', fontSize: 15 }}>Start for free →</Link>
-          <Link href="/login" className="ai-btn ai-btn-ghost" style={{ padding: '12px 26px', fontSize: 15 }}>Sign in</Link>
+        <div className="land-pill au">✦ 17 AI tools · 100% free · No credits</div>
+        <h1 className="land-h1 au au1">
+          Your complete<br />AI workspace
+        </h1>
+        <p className="land-p au au2">
+          Chat, generate images, write code, build websites —
+          all in one platform powered by the world's fastest AI models.
+        </p>
+        <div className="land-cta au au3">
+          <Link href="/register" className="btn btn-p" style={{ padding: '13px 28px', fontSize: 15 }}>
+            Start for free →
+          </Link>
+          <Link href="/login" className="btn btn-g" style={{ padding: '13px 28px', fontSize: 15 }}>
+            Sign in
+          </Link>
         </div>
       </div>
 
-      <div style={{ maxWidth: 1040, margin: '0 auto 80px', padding: '0 28px' }}>
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--c-t3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 20 }}>Everything included</p>
-        <div className="land-tools-grid">
+      {/* Tools */}
+      <div className="land-tools">
+        <p style={{ textAlign:'center', fontSize:10.5, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:'var(--tx3)', marginBottom:20 }}>
+          Everything included
+        </p>
+        <div className="land-tg">
           {TOOLS.map(([icon, name, desc]) => (
-            <div key={name as string} className="land-tool">
-              <span style={{ fontSize: 20, flexShrink: 0 }}>{icon}</span>
+            <div key={name as string} className="land-tc">
+              <span style={{ fontSize: 22, flexShrink: 0 }}>{icon}</span>
               <div>
-                <div className="land-tool-name">{name}</div>
-                <div className="land-tool-desc">{desc}</div>
+                <div className="land-tn">{name}</div>
+                <div className="land-td">{desc}</div>
               </div>
             </div>
           ))}
