@@ -11,7 +11,8 @@ export default function RegisterPage() {
   const { login } = useAuthStore();
   const [f, setF] = useState({ email:'', username:'', full_name:'', password:'' });
   const [loading, setLoading] = useState(false);
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setF(v => ({ ...v, [k]: e.target.value }));
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setF(v => ({ ...v, [k]: e.target.value }));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,37 +27,41 @@ export default function RegisterPage() {
   };
 
   const FIELDS = [
-    { k: 'full_name', l: 'Full Name', p: 'John Doe', t: 'text' },
-    { k: 'username',  l: 'Username',  p: 'johndoe',  t: 'text' },
-    { k: 'email',     l: 'Email',     p: 'john@example.com', t: 'email' },
-    { k: 'password',  l: 'Password',  p: '••••••••', t: 'password' },
+    { k:'full_name', l:'Full Name', p:'John Doe',          t:'text' },
+    { k:'username',  l:'Username',  p:'johndoe',            t:'text' },
+    { k:'email',     l:'Email',     p:'john@example.com',   t:'email' },
+    { k:'password',  l:'Password',  p:'••••••••',           t:'password' },
   ];
 
   return (
-    <div className="auth-bg">
-      <div className="auth-card">
-        <div className="auth-logo-wrap anim-in">
-          <div className="auth-logo-icon">⚡</div>
-          <div className="auth-title">Create account</div>
-          <div className="auth-sub">AI Studio Pro is free to use</div>
+    <div className="auth-wrap">
+      <div className="auth-box">
+        <div className="auth-logo au">
+          <div className="auth-lmark">⚡</div>
+          <div className="auth-h">Create account</div>
+          <div className="auth-s">AI Studio Pro is 100% free</div>
         </div>
-        <div className="ai-card anim-in anim-in-d1">
+
+        <div className="auth-glass au au1">
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {FIELDS.map(({ k, l, p, t }) => (
-              <div key={k} className="field-wrap">
-                <label className="field-label">{l}</label>
-                <input className="ai-input" type={t} placeholder={p} value={(f as any)[k]} onChange={set(k)} />
+              <div key={k} className="field">
+                <label className="flabel">{l}</label>
+                <input className="fi" type={t} placeholder={p}
+                  value={(f as any)[k]} onChange={set(k)} />
               </div>
             ))}
-            <button className="ai-btn ai-btn-primary" type="submit" disabled={loading}
-              style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: 4 }}>
-              {loading ? <><span className="spinner" /> Creating account…</> : 'Create account →'}
+            <button className="btn btn-p" type="submit" disabled={loading}
+              style={{ width: '100%', justifyContent: 'center', padding: '13px', marginTop: 4 }}>
+              {loading ? <><span className="spin" /> Creating account…</> : 'Create account →'}
             </button>
           </form>
         </div>
-        <p className="anim-in anim-in-d2" style={{ textAlign: 'center', fontSize: 13, color: 'var(--c-t2)', marginTop: 16 }}>
-          Already have an account? <Link href="/login" style={{ color: 'var(--c-accent2)' }}>Sign in</Link>
-        </p>
+
+        <div className="auth-link-row au au2">
+          Already have an account?{' '}
+          <Link href="/login">Sign in</Link>
+        </div>
       </div>
     </div>
   );
