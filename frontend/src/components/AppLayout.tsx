@@ -1,4 +1,3 @@
-'use client';
 import Sidebar from './Sidebar';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
 "use client";
