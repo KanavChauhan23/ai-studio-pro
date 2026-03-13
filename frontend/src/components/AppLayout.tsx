@@ -1,3 +1,6 @@
+'use client';
+import Sidebar from './Sidebar';
+export default function AppLayout({ children }: { children: React.ReactNode }) {
 "use client";
 
 import { useState } from "react";
@@ -8,6 +11,9 @@ export default function AppLayout({ children }: any) {
   const [open, setOpen] = useState(false);
 
   return (
+    <div className="shell">
+      <Sidebar />
+      <main className="main">{children}</main>
     <div className="flex">
 
       <Sidebar open={open} setOpen={setOpen} />
