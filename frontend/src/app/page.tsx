@@ -29,7 +29,7 @@ export default function LandingPage() {
         </Link>
         <div style={{ display: 'flex', gap: 10 }}>
           <Link href="/login"    className="btn btn-g" style={{ padding: '8px 18px', fontSize: 13 }}>Log in</Link>
-          <Link href="/register" className="btn btn-p" style={{ padding: '8px 18px', fontSize: 13 }}>Get started →</Link>
+          <Link href="/register" className="btn btn-p" style={{ padding: '8px 18px', fontSize: 13 }}>Get started</Link>
         </div>
       </nav>
 
@@ -45,7 +45,7 @@ export default function LandingPage() {
         </p>
         <div className="land-cta au au3">
           <Link href="/register" className="btn btn-p" style={{ padding: '13px 28px', fontSize: 15 }}>
-            Start for free →
+            Start for free
           </Link>
           <Link href="/login" className="btn btn-g" style={{ padding: '13px 28px', fontSize: 15 }}>
             Sign in
