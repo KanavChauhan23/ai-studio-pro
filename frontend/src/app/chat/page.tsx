@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuthStore } from '@/lib/auth';
 import AppLayout from '@/components/AppLayout';
 import api from '@/lib/api';
@@ -77,7 +78,7 @@ export default function ChatPage() {
         <div className="chat-feed">
           {msgs.length === 0 ? (
             <div className="chat-empty">
-              <div className="chat-empty-icon au">⚡</div>
+              <div className="chat-empty-icon au"><Image src="/logo.png" alt="AI Studio Pro" width={52} height={52} style={{ borderRadius: 14, filter: "drop-shadow(0 6px 20px rgba(124,92,252,0.6))" }} /></div>
               <div className="chat-empty-h au au1">What can I help with?</div>
               <div className="chat-empty-s au au2">Powered by Groq — the fastest AI inference</div>
               <div className="sq au au3">
@@ -90,14 +91,14 @@ export default function ChatPage() {
             <div className="chat-inner">
               {msgs.map((m, i) => (
                 <div key={i} className={`cmsg ${m.role === 'user' ? 'cmsg-u' : ''} au`}>
-                  {m.role === 'assistant' && <div className="cav cav-ai">⚡</div>}
+                  {m.role === 'assistant' && <div className="cav cav-ai" style={{ background: "transparent", border: "none", boxShadow: "none" }}><Image src="/logo.png" alt="AI" width={32} height={32} style={{ borderRadius: "50%", objectFit: "contain" }} /></div>}
                   <div className={m.role === 'user' ? 'cbub-u' : 'cbub-ai'}>{m.content}</div>
                   {m.role === 'user' && <div className="cav cav-u">{initials}</div>}
                 </div>
               ))}
               {loading && (
                 <div className="cmsg au">
-                  <div className="cav cav-ai">⚡</div>
+                  <div className="cav cav-ai" style={{ background: "transparent", border: "none", boxShadow: "none" }}><Image src="/logo.png" alt="AI" width={32} height={32} style={{ borderRadius: "50%", objectFit: "contain" }} /></div>
                   <div className="cbub-ai"><div className="tdots"><span/><span/><span/></div></div>
                 </div>
               )}
