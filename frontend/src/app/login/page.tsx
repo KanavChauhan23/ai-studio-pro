@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuthStore } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
@@ -25,7 +26,9 @@ export default function LoginPage() {
     <div className="auth-wrap">
       <div className="auth-box">
         <div className="auth-logo au">
-          <div className="auth-lmark">⚡</div>
+          <div className="auth-lmark">
+            <Image src="/logo.png" alt="AI Studio Pro" width={56} height={56} style={{ borderRadius: 14 }} />
+          </div>
           <div className="auth-h">Welcome back</div>
           <div className="auth-s">Sign in to AI Studio Pro</div>
         </div>
