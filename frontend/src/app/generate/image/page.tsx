@@ -5,7 +5,7 @@ import { useAuthStore } from '@/lib/auth';
 import AppLayout from '@/components/AppLayout';
 import toast from 'react-hot-toast';
 
-const STYLES: Record<string,string> = {
+const STYLES: Record<string, string> = {
   realistic: 'photorealistic, professional photography, sharp focus, natural lighting',
   cinematic: 'cinematic, dramatic lighting, film grain, movie still',
   artistic:  'digital art, vibrant, trending on artstation, masterpiece',
@@ -14,65 +14,100 @@ const STYLES: Record<string,string> = {
   sketch:    'pencil sketch, detailed line art, professional illustration',
 };
 
-// Smaller safe dimensions — large sizes cause Pollinations to timeout
-const DIMS: Record<string,[number,number]> = {
+const DIMS: Record<string, [number, number]> = {
   '1:1':  [512, 512],
   '16:9': [768, 432],
   '9:16': [432, 768],
   '4:3':  [640, 480],
 };
 
+type ImgState = { blobUrl: string | null; loading: boolean; error: string | null; progress: number };
+
 export default function ImagePage() {
   const router = useRouter();
   const { user, fetchUser } = useAuthStore();
-  const [prompt, setPrompt]   = useState('');
-  const [style, setStyle]     = useState('realistic');
-  const [ratio, setRatio]     = useState('1:1');
-  const [count, setCount]     = useState('1');
-  const [images, setImages]   = useState<{ url:string; loaded:boolean; error:boolean; retries:number }[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [prompt, setPrompt] = useState('');
+  const [style,  setStyle]  = useState('realistic');
+  const [ratio,  setRatio]  = useState('1:1');
+  const [count,  setCount]  = useState('1');
+  const [images, setImages] = useState<ImgState[]>([]);
+  const [anyLoading, setAnyLoading] = useState(false);
 
   useEffect(() => { if (!user) fetchUser().catch(() => router.push('/login')); }, [user]);
 
-  const buildUrl = (enhanced: string, w: number, h: number, seed: number) =>
-    `https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=${w}&height=${h}&seed=${seed}&nologo=true&model=flux`;
+  // Tick a fake progress bar while waiting
+  const tickProgress = (idx: number) => {
+    let pct = 5;
+    const id = setInterval(() => {
+      pct = Math.min(pct + Math.random() * 8, 90);
+      setImages(prev => prev.map((x, j) =>
+        j === idx && x.loading ? { ...x, progress: Math.round(pct) } : x
+      ));
+    }, 800);
+    return id;
+  };
 
-  const generate = () => {
+  const fetchImage = async (url: string, idx: number) => {
+    const tid = tickProgress(idx);
+    try {
+      const controller = new AbortController();
+      // 90 second timeout — Pollinations can be slow
+      const timer = setTimeout(() => controller.abort(), 90000);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timer);
+      clearInterval(tid);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      if (!blob.type.startsWith('image/')) throw new Error('Not an image');
+
+      const blobUrl = URL.createObjectURL(blob);
+      setImages(prev => prev.map((x, j) =>
+        j === idx ? { ...x, blobUrl, loading: false, error: null, progress: 100 } : x
+      ));
+    } catch (err: any) {
+      clearInterval(tid);
+      const msg = err.name === 'AbortError' ? 'Timed out — try a shorter prompt' : 'Generation failed';
+      setImages(prev => prev.map((x, j) =>
+        j === idx ? { ...x, loading: false, error: msg, progress: 0 } : x
+      ));
+      toast.error(msg);
+    }
+  };
+
+  const generate = async () => {
     if (!prompt.trim()) { toast.error('Enter a prompt first'); return; }
-    setLoading(true);
+    setAnyLoading(true);
+
     const enhanced = `${prompt.trim()}, ${STYLES[style]}`;
-    const [w, h] = DIMS[ratio];
-    const n = parseInt(count);
-    setImages(Array.from({ length: n }, (_, i) => ({
-      url: buildUrl(enhanced, w, h, Math.floor(Math.random() * 99999) + i * 1337),
-      loaded: false,
-      error: false,
-      retries: 0,
-    })));
-  };
+    const [w, h]   = DIMS[ratio];
+    const n        = parseInt(count);
 
-  const onLoad = (i: number) => {
-    setImages(p => p.map((x, j) => j === i ? { ...x, loaded: true, error: false } : x));
-    setLoading(false);
-    toast.success('Image generated!');
-  };
+    const initial: ImgState[] = Array.from({ length: n }, () => ({
+      blobUrl: null, loading: true, error: null, progress: 5,
+    }));
+    setImages(initial);
 
-  const onError = (i: number) => {
-    setImages(prev => {
-      const img = prev[i];
-      // Auto-retry up to 2 times with a new seed
-      if (img.retries < 2) {
-        const enhanced = `${prompt.trim()}, ${STYLES[style]}`;
-        const [w, h] = DIMS[ratio];
-        const newSeed = Math.floor(Math.random() * 99999);
-        const newUrl  = buildUrl(enhanced, w, h, newSeed);
-        return prev.map((x, j) => j === i ? { ...x, url: newUrl, retries: x.retries + 1 } : x);
-      }
-      // After 2 retries, mark as failed
-      toast.error('Generation failed — try a different prompt or style');
-      setLoading(false);
-      return prev.map((x, j) => j === i ? { ...x, loaded: true, error: true } : x);
+    const fetches = Array.from({ length: n }, (_, i) => {
+      const seed = Math.floor(Math.random() * 99999) + i * 1337;
+      const url  = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=${w}&height=${h}&seed=${seed}&nologo=true&model=flux`;
+      return fetchImage(url, i);
     });
+
+    await Promise.allSettled(fetches);
+    setAnyLoading(false);
+  };
+
+  const retry = (idx: number) => {
+    const enhanced = `${prompt.trim()}, ${STYLES[style]}`;
+    const [w, h]   = DIMS[ratio];
+    const seed     = Math.floor(Math.random() * 99999);
+    const url      = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=${w}&height=${h}&seed=${seed}&nologo=true&model=flux`;
+    setImages(prev => prev.map((x, j) =>
+      j === idx ? { blobUrl: null, loading: true, error: null, progress: 5 } : x
+    ));
+    setAnyLoading(true);
+    fetchImage(url, idx).then(() => setAnyLoading(false));
   };
 
   return (
@@ -90,7 +125,7 @@ export default function ImagePage() {
           <div className="field">
             <label className="flabel">Describe your image</label>
             <textarea className="fi-ta" rows={3}
-              placeholder="A cinematic portrait of a neon-lit city at midnight, rain-soaked streets…"
+              placeholder="A cinematic portrait of a neon-lit city at midnight, rain-soaked streets reflecting purple lights…"
               value={prompt} onChange={e => setPrompt(e.target.value)} />
           </div>
           <div className="fgrid3">
@@ -107,64 +142,82 @@ export default function ImagePage() {
               </div>
             ))}
           </div>
-          <div>
-            <button className="btn btn-p" onClick={generate} disabled={loading}>
-              {loading ? <><span className="spin" /> Generating…</> : '🖼️ Generate Images'}
-            </button>
-          </div>
+          <button className="btn btn-p" onClick={generate} disabled={anyLoading}>
+            {anyLoading ? <><span className="spin" /> Generating…</> : '🖼️ Generate Images'}
+          </button>
         </div>
 
         {images.length > 0 && (
-          <div className="img-grid" style={{ gridTemplateColumns: images.length === 1 ? '1fr' : '1fr 1fr' }}>
+          <div className="img-grid" style={{ marginTop:24, display:'grid', gap:16,
+            gridTemplateColumns: images.length === 1 ? '1fr' : '1fr 1fr' }}>
             {images.map((img, i) => (
               <div key={i} className="img-c">
-                {!img.loaded && (
-                  <div className="img-skel">
-                    <span className="spin spin-v" style={{ width:32, height:32, borderWidth:3 }} />
-                    <p style={{ marginTop:12, fontSize:12, color:'var(--tx3)' }}>
-                      {img.retries > 0 ? `Retrying… (${img.retries}/2)` : 'Generating your image…'}
+
+                {/* ── Loading state with progress bar ── */}
+                {img.loading && (
+                  <div style={{
+                    padding: '60px 24px', textAlign:'center',
+                    background:'var(--g1)', borderRadius:16, border:'1px solid var(--b1)'
+                  }}>
+                    <span className="spin spin-v" style={{ width:36, height:36, borderWidth:3 }} />
+                    <p style={{ marginTop:14, fontSize:13, color:'var(--tx2)' }}>
+                      Generating image {i + 1}…
                     </p>
+                    <p style={{ fontSize:11, color:'var(--tx3)', marginTop:4 }}>
+                      This can take 20–40 seconds
+                    </p>
+                    {/* Progress bar */}
+                    <div style={{
+                      marginTop:16, height:4, borderRadius:4,
+                      background:'var(--g2)', overflow:'hidden'
+                    }}>
+                      <div style={{
+                        height:'100%', borderRadius:4,
+                        background:'linear-gradient(90deg, var(--v), var(--v1))',
+                        width:`${img.progress}%`,
+                        transition:'width 0.8s ease'
+                      }} />
+                    </div>
+                    <p style={{ fontSize:11, color:'var(--tx3)', marginTop:6 }}>{img.progress}%</p>
                   </div>
                 )}
-                {!img.error && (
-                  <img
-                    src={img.url}
-                    alt={`Generated ${i + 1}`}
-                    style={{ width:'100%', display: img.loaded ? 'block' : 'none', borderRadius:'16px 16px 0 0' }}
-                    onLoad={() => onLoad(i)}
-                    onError={() => onError(i)}
-                  />
-                )}
+
+                {/* ── Error state ── */}
                 {img.error && (
-                  <div style={{ padding:48, textAlign:'center', fontSize:13, color:'var(--tx2)' }}>
-                    ❌ Generation failed — try a different prompt or style
-                    <br />
-                    <button
-                      className="btn btn-g"
-                      style={{ marginTop:16, fontSize:12 }}
-                      onClick={() => {
-                        const enhanced = `${prompt.trim()}, ${STYLES[style]}`;
-                        const [w, h] = DIMS[ratio];
-                        const newSeed = Math.floor(Math.random() * 99999);
-                        setImages(p => p.map((x, j) => j === i
-                          ? { url: buildUrl(enhanced, w, h, newSeed), loaded: false, error: false, retries: 0 }
-                          : x));
-                        setLoading(true);
-                      }}
-                    >
+                  <div style={{
+                    padding:'48px 24px', textAlign:'center',
+                    background:'var(--g1)', borderRadius:16, border:'1px solid rgba(244,63,94,0.2)'
+                  }}>
+                    <div style={{ fontSize:28, marginBottom:10 }}>❌</div>
+                    <p style={{ fontSize:13, color:'var(--tx2)', marginBottom:16 }}>{img.error}</p>
+                    <button className="btn btn-g" style={{ fontSize:12 }} onClick={() => retry(i)}>
                       🔄 Try Again
                     </button>
                   </div>
                 )}
-                {img.loaded && !img.error && (
-                  <div className="img-foot">
-                    <span style={{ fontSize:12, color:'var(--tx2)' }}>Image {i + 1}</span>
-                    <a href={img.url} target="_blank" rel="noreferrer"
-                      className="btn btn-g" style={{ fontSize:12, padding:'5px 12px', textDecoration:'none' }}>
-                      ⬇ Download
-                    </a>
-                  </div>
+
+                {/* ── Success state ── */}
+                {img.blobUrl && (
+                  <>
+                    <img
+                      src={img.blobUrl}
+                      alt={`Generated ${i + 1}`}
+                      style={{ width:'100%', borderRadius:'16px 16px 0 0', display:'block' }}
+                    />
+                    <div className="img-foot">
+                      <span style={{ fontSize:12, color:'var(--tx2)' }}>Image {i + 1}</span>
+                      <div style={{ display:'flex', gap:8 }}>
+                        <button className="btn btn-g" style={{ fontSize:12, padding:'5px 12px' }}
+                          onClick={() => retry(i)}>🔄 Regenerate</button>
+                        <a href={img.blobUrl} download={`ai-image-${i+1}.png`}
+                          className="btn btn-p" style={{ fontSize:12, padding:'5px 12px', textDecoration:'none' }}>
+                          ⬇ Download
+                        </a>
+                      </div>
+                    </div>
+                  </>
                 )}
+
               </div>
             ))}
           </div>
