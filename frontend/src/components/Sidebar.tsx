@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth';
 
@@ -55,7 +56,7 @@ export default function Sidebar({ open, setOpen }: { open: boolean; setOpen: (v:
           <Link href="/dashboard"
             onClick={close}
             style={{ display:'flex', alignItems:'center', gap:10, textDecoration:'none', flex:1, minWidth:0 }}>
-            <div className="sb-mark">⚡</div>
+            <Image src="/logo.png" alt="AI Studio Pro" width={34} height={34} style={{ borderRadius: 8, flexShrink: 0 }} />
             <span className="sb-name">AI Studio Pro</span>
           </Link>
           {/* ✕ only visible on mobile */}
