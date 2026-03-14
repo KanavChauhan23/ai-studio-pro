@@ -26,54 +26,60 @@ type ImgState = { blobUrl: string | null; loading: boolean; error: string | null
 export default function ImagePage() {
   const router = useRouter();
   const { user, fetchUser } = useAuthStore();
-  const [prompt, setPrompt] = useState('');
-  const [style,  setStyle]  = useState('realistic');
-  const [ratio,  setRatio]  = useState('1:1');
-  const [count,  setCount]  = useState('1');
-  const [images, setImages] = useState<ImgState[]>([]);
+  const [prompt,     setPrompt]     = useState('');
+  const [style,      setStyle]      = useState('realistic');
+  const [ratio,      setRatio]      = useState('1:1');
+  const [count,      setCount]      = useState('1');
+  const [images,     setImages]     = useState<ImgState[]>([]);
   const [anyLoading, setAnyLoading] = useState(false);
 
   useEffect(() => { if (!user) fetchUser().catch(() => router.push('/login')); }, [user]);
 
-  // Tick a fake progress bar while waiting
   const tickProgress = (idx: number) => {
     let pct = 5;
     const id = setInterval(() => {
-      pct = Math.min(pct + Math.random() * 8, 90);
+      // Slow down near 85% so it doesn't look stuck
+      const step = pct < 60 ? Math.random() * 10 : Math.random() * 3;
+      pct = Math.min(pct + step, 85);
       setImages(prev => prev.map((x, j) =>
         j === idx && x.loading ? { ...x, progress: Math.round(pct) } : x
       ));
-    }, 800);
+    }, 1000);
     return id;
   };
 
-  const fetchImage = async (url: string, idx: number) => {
+  const fetchImage = async (pollinationsUrl: string, idx: number) => {
     const tid = tickProgress(idx);
     try {
-      const controller = new AbortController();
-      // 90 second timeout — Pollinations can be slow
-      const timer = setTimeout(() => controller.abort(), 90000);
-      const res = await fetch(url, { signal: controller.signal });
-      clearTimeout(timer);
+      // Route through our Next.js proxy — avoids CORS completely
+      const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(pollinationsUrl)}`;
+      const res = await fetch(proxyUrl);
+
       clearInterval(tid);
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      if (!blob.type.startsWith('image/')) throw new Error('Not an image');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Generation failed' }));
+        throw new Error(err.error || 'Generation failed');
+      }
 
+      const blob    = await res.blob();
       const blobUrl = URL.createObjectURL(blob);
+
       setImages(prev => prev.map((x, j) =>
-        j === idx ? { ...x, blobUrl, loading: false, error: null, progress: 100 } : x
+        j === idx ? { blobUrl, loading: false, error: null, progress: 100 } : x
       ));
+      toast.success('Image ready!');
     } catch (err: any) {
       clearInterval(tid);
-      const msg = err.name === 'AbortError' ? 'Timed out — try a shorter prompt' : 'Generation failed';
       setImages(prev => prev.map((x, j) =>
-        j === idx ? { ...x, loading: false, error: msg, progress: 0 } : x
+        j === idx ? { ...x, loading: false, error: err.message || 'Generation failed', progress: 0 } : x
       ));
-      toast.error(msg);
+      toast.error(err.message || 'Generation failed');
     }
   };
+
+  const buildPollinationsUrl = (enhanced: string, w: number, h: number, seed: number) =>
+    `https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=${w}&height=${h}&seed=${seed}&nologo=true&model=flux`;
 
   const generate = async () => {
     if (!prompt.trim()) { toast.error('Enter a prompt first'); return; }
@@ -83,31 +89,29 @@ export default function ImagePage() {
     const [w, h]   = DIMS[ratio];
     const n        = parseInt(count);
 
-    const initial: ImgState[] = Array.from({ length: n }, () => ({
+    setImages(Array.from({ length: n }, () => ({
       blobUrl: null, loading: true, error: null, progress: 5,
-    }));
-    setImages(initial);
+    })));
 
-    const fetches = Array.from({ length: n }, (_, i) => {
-      const seed = Math.floor(Math.random() * 99999) + i * 1337;
-      const url  = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=${w}&height=${h}&seed=${seed}&nologo=true&model=flux`;
-      return fetchImage(url, i);
-    });
-
-    await Promise.allSettled(fetches);
+    await Promise.allSettled(
+      Array.from({ length: n }, (_, i) => {
+        const seed = Math.floor(Math.random() * 99999) + i * 1337;
+        return fetchImage(buildPollinationsUrl(enhanced, w, h, seed), i);
+      })
+    );
     setAnyLoading(false);
   };
 
-  const retry = (idx: number) => {
+  const retry = async (idx: number) => {
     const enhanced = `${prompt.trim()}, ${STYLES[style]}`;
     const [w, h]   = DIMS[ratio];
     const seed     = Math.floor(Math.random() * 99999);
-    const url      = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=${w}&height=${h}&seed=${seed}&nologo=true&model=flux`;
     setImages(prev => prev.map((x, j) =>
       j === idx ? { blobUrl: null, loading: true, error: null, progress: 5 } : x
     ));
     setAnyLoading(true);
-    fetchImage(url, idx).then(() => setAnyLoading(false));
+    await fetchImage(buildPollinationsUrl(enhanced, w, h, seed), idx);
+    setAnyLoading(false);
   };
 
   return (
@@ -148,42 +152,33 @@ export default function ImagePage() {
         </div>
 
         {images.length > 0 && (
-          <div className="img-grid" style={{ marginTop:24, display:'grid', gap:16,
+          <div style={{ marginTop:24, display:'grid', gap:16,
             gridTemplateColumns: images.length === 1 ? '1fr' : '1fr 1fr' }}>
             {images.map((img, i) => (
               <div key={i} className="img-c">
 
-                {/* ── Loading state with progress bar ── */}
+                {/* Loading */}
                 {img.loading && (
                   <div style={{
-                    padding: '60px 24px', textAlign:'center',
+                    padding:'60px 24px', textAlign:'center',
                     background:'var(--g1)', borderRadius:16, border:'1px solid var(--b1)'
                   }}>
                     <span className="spin spin-v" style={{ width:36, height:36, borderWidth:3 }} />
-                    <p style={{ marginTop:14, fontSize:13, color:'var(--tx2)' }}>
-                      Generating image {i + 1}…
-                    </p>
-                    <p style={{ fontSize:11, color:'var(--tx3)', marginTop:4 }}>
-                      This can take 20–40 seconds
-                    </p>
-                    {/* Progress bar */}
-                    <div style={{
-                      marginTop:16, height:4, borderRadius:4,
-                      background:'var(--g2)', overflow:'hidden'
-                    }}>
+                    <p style={{ marginTop:14, fontSize:13, color:'var(--tx2)' }}>Generating image {i + 1}…</p>
+                    <p style={{ fontSize:11, color:'var(--tx3)', marginTop:4 }}>This can take 20–40 seconds</p>
+                    <div style={{ marginTop:16, height:4, borderRadius:4, background:'var(--g2)', overflow:'hidden' }}>
                       <div style={{
                         height:'100%', borderRadius:4,
                         background:'linear-gradient(90deg, var(--v), var(--v1))',
-                        width:`${img.progress}%`,
-                        transition:'width 0.8s ease'
+                        width:`${img.progress}%`, transition:'width 1s ease'
                       }} />
                     </div>
                     <p style={{ fontSize:11, color:'var(--tx3)', marginTop:6 }}>{img.progress}%</p>
                   </div>
                 )}
 
-                {/* ── Error state ── */}
-                {img.error && (
+                {/* Error */}
+                {!img.loading && img.error && (
                   <div style={{
                     padding:'48px 24px', textAlign:'center',
                     background:'var(--g1)', borderRadius:16, border:'1px solid rgba(244,63,94,0.2)'
@@ -196,14 +191,11 @@ export default function ImagePage() {
                   </div>
                 )}
 
-                {/* ── Success state ── */}
-                {img.blobUrl && (
+                {/* Success */}
+                {!img.loading && img.blobUrl && (
                   <>
-                    <img
-                      src={img.blobUrl}
-                      alt={`Generated ${i + 1}`}
-                      style={{ width:'100%', borderRadius:'16px 16px 0 0', display:'block' }}
-                    />
+                    <img src={img.blobUrl} alt={`Generated ${i + 1}`}
+                      style={{ width:'100%', borderRadius:'16px 16px 0 0', display:'block' }} />
                     <div className="img-foot">
                       <span style={{ fontSize:12, color:'var(--tx2)' }}>Image {i + 1}</span>
                       <div style={{ display:'flex', gap:8 }}>
