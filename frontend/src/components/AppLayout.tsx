@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import Sidebar from './Sidebar';
 
 export default function AppLayout({ children }: any) {
@@ -16,7 +17,7 @@ export default function AppLayout({ children }: any) {
         <div className="mob-bar">
           <button className="mob-ham" onClick={() => setOpen(true)}>☰</button>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <div className="sb-mark" style={{ width:26, height:26, fontSize:13 }}>⚡</div>
+            <Image src="/logo.png" alt="AI Studio Pro" width={26} height={26} style={{ borderRadius: 6 }} />
             <span style={{ fontSize:14, fontWeight:700, color:'var(--tx1)' }}>AI Studio Pro</span>
           </div>
         </div>
