@@ -4,24 +4,24 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/auth';
 
 const ITEMS = [
-  { ic: '🏠', lb: 'Dashboard',        href: '/dashboard' },
-  { ic: '💬', lb: 'AI Chat',          href: '/chat' },
-  { ic: '🖼️', lb: 'Image Generator',  href: '/generate/image' },
-  { ic: '📝', lb: 'Text Generator',   href: '/generate/text' },
-  { ic: '💻', lb: 'Code Generator',   href: '/generate/code' },
-  { ic: '🐛', lb: 'Code Debugger',    href: '/tools/debug' },
-  { ic: '🌐', lb: 'Website Builder',  href: '/tools/website' },
-  { ic: '📄', lb: 'Doc Summarizer',   href: '/tools/summarize-doc' },
-  { ic: '📋', lb: 'Resume Builder',   href: '/tools/resume' },
-  { ic: '✨', lb: 'Prompt Improver',  href: '/tools/improve-prompt' },
-  { ic: '🎬', lb: 'YouTube Script',   href: '/tools/youtube' },
-  { ic: '✏️', lb: 'Content Rewriter', href: '/tools/rewrite' },
-  { ic: '🌍', lb: 'Translator',       href: '/tools/translate' },
-  { ic: '📧', lb: 'Email Writer',     href: '/tools/email' },
-  { ic: '🔍', lb: 'Web Search AI',    href: '/tools/web-search' },
-  { ic: '📚', lb: 'Study Notes',      href: '/tools/study-notes' },
-  { ic: '📱', lb: 'Social Posts',     href: '/tools/social' },
-  { ic: '📰', lb: 'Text Summarizer',  href: '/tools/summarize' },
+  { ic: '🏠', lb: 'Dashboard',         href: '/dashboard' },
+  { ic: '💬', lb: 'AI Chat',           href: '/chat' },
+  { ic: '🖼️', lb: 'Image Generator',   href: '/generate/image' },
+  { ic: '📝', lb: 'Text Generator',    href: '/generate/text' },
+  { ic: '💻', lb: 'Code Generator',    href: '/generate/code' },
+  { ic: '🐛', lb: 'Code Debugger',     href: '/tools/debug' },
+  { ic: '🌐', lb: 'Website Builder',   href: '/tools/website' },
+  { ic: '📄', lb: 'Doc Summarizer',    href: '/tools/summarize-doc' },
+  { ic: '📋', lb: 'Resume Builder',    href: '/tools/resume' },
+  { ic: '✨', lb: 'Prompt Improver',   href: '/tools/improve-prompt' },
+  { ic: '🎬', lb: 'YouTube Script',    href: '/tools/youtube' },
+  { ic: '✏️', lb: 'Content Rewriter',  href: '/tools/rewrite' },
+  { ic: '🌍', lb: 'Translator',        href: '/tools/translate' },
+  { ic: '📧', lb: 'Email Writer',      href: '/tools/email' },
+  { ic: '🔍', lb: 'Web Search AI',     href: '/tools/web-search' },
+  { ic: '📚', lb: 'Study Notes',       href: '/tools/study-notes' },
+  { ic: '📱', lb: 'Social Posts',      href: '/tools/social' },
+  { ic: '📰', lb: 'Text Summarizer',   href: '/tools/summarize' },
 ];
 
 export default function Sidebar({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
@@ -30,59 +30,46 @@ export default function Sidebar({ open, setOpen }: { open: boolean; setOpen: (v:
   const { user, logout } = useAuthStore();
   const initials = (user?.username || 'AI').slice(0, 2).toUpperCase();
 
+  const close = () => setOpen(false);
+
   return (
     <>
-      {/* Dark overlay — mobile only, shown when open */}
+      {/* ── Dark backdrop — mobile only, only when open ── */}
       {open && (
         <div
-          onClick={() => setOpen(false)}
+          onClick={close}
           style={{
             position: 'fixed', inset: 0, zIndex: 40,
-            background: 'rgba(0,0,0,0.55)',
+            background: 'rgba(0,0,0,0.6)',
             backdropFilter: 'blur(4px)',
           }}
-          className="md-hide"
+          className="mob-only"
         />
       )}
 
-      {/* Sidebar panel */}
-      <aside
-        className="sidebar"
-        style={{
-          width: 248,
-          /* Mobile: fixed + slide in/out. Desktop: static, always visible */
-        }}
-      >
-        {/* Logo header */}
+      {/* ── Sidebar panel ── */}
+      <aside className="sidebar sb-panel">
+
+        {/* Logo row */}
         <div className="sb-head">
           <Link href="/dashboard"
-            style={{ display:'flex', alignItems:'center', gap:10, textDecoration:'none', flex:1, minWidth:0 }}
-            onClick={() => setOpen(false)}>
+            onClick={close}
+            style={{ display:'flex', alignItems:'center', gap:10, textDecoration:'none', flex:1, minWidth:0 }}>
             <div className="sb-mark">⚡</div>
             <span className="sb-name">AI Studio Pro</span>
           </Link>
-          {/* ✕ close button — mobile only */}
-          <button
-            onClick={() => setOpen(false)}
-            className="sb-close-btn"
-            style={{
-              background: 'var(--g1)', border: '1px solid var(--b1)',
-              borderRadius: 8, width: 28, height: 28,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: 'var(--tx2)', fontSize: 13, flexShrink: 0,
-            }}
-          >
-            ✕
-          </button>
+          {/* ✕ only visible on mobile */}
+          <button onClick={close} className="sb-x mob-only-flex">✕</button>
         </div>
 
-        {/* Nav links */}
+        {/* Nav */}
         <div className="sb-body">
+          <div className="sb-group-label">Menu</div>
           {ITEMS.map(item => (
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setOpen(false)}
+              onClick={close}
               className={`sbn ${pathname === item.href ? 'on' : ''}`}
             >
               <span className="sbn-ic">{item.ic}</span>
@@ -91,11 +78,11 @@ export default function Sidebar({ open, setOpen }: { open: boolean; setOpen: (v:
           ))}
         </div>
 
-        {/* User footer */}
+        {/* Footer */}
         <div className="sb-foot">
-          <button className="sb-user" onClick={() => { logout(); router.push('/login'); setOpen(false); }}>
+          <button className="sb-user" onClick={() => { logout(); router.push('/login'); close(); }}>
             <div className="sb-av">{initials}</div>
-            <div style={{ minWidth: 0 }}>
+            <div style={{ minWidth:0 }}>
               <div className="sb-uname">{user?.username || 'User'}</div>
               <div className="sb-uplan">Free plan · Sign out</div>
             </div>
@@ -104,28 +91,51 @@ export default function Sidebar({ open, setOpen }: { open: boolean; setOpen: (v:
       </aside>
 
       <style>{`
-        /* Desktop: always visible, static in flow */
-        .sidebar {
+        /* ── Desktop: sidebar is a normal flex child, always visible ── */
+        .sb-panel {
           position: sticky;
-          transform: none !important;
+          top: 0;
+          width: 248px;
+          flex-shrink: 0;
         }
 
-        /* Mobile: fixed drawer, slides in from left */
+        /* ── Mobile: sidebar is a fixed drawer that slides in ── */
         @media (max-width: 767px) {
-          .sidebar {
+          .sb-panel {
             position: fixed !important;
             top: 0; left: 0;
+            width: 260px !important;
             z-index: 50;
-            transform: ${open ? 'translateX(0)' : 'translateX(-100%)'} !important;
-            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transform: ${open ? 'translateX(0)' : 'translateX(-100%)'};
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
           }
-          .md-hide { display: block; }
-          .sb-close-btn { display: flex !important; }
+          /* On mobile make sure labels are always shown inside the drawer */
+          .sb-panel .sbn-lbl,
+          .sb-panel .sb-name,
+          .sb-panel .sb-group-label,
+          .sb-panel .sb-uname,
+          .sb-panel .sb-uplan {
+            display: block !important;
+          }
         }
 
+        /* Helpers */
+        .mob-only      { display: block; }
+        .mob-only-flex { display: flex; }
         @media (min-width: 768px) {
-          .md-hide { display: none !important; }
-          .sb-close-btn { display: none !important; }
+          .mob-only      { display: none !important; }
+          .mob-only-flex { display: none !important; }
+        }
+
+        /* ✕ close button style */
+        .sb-x {
+          background: var(--g1);
+          border: 1px solid var(--b1);
+          border-radius: 8px;
+          width: 28px; height: 28px;
+          align-items: center; justify-content: center;
+          cursor: pointer; color: var(--tx2); font-size: 13px;
+          flex-shrink: 0;
         }
       `}</style>
     </>
