@@ -56,7 +56,7 @@ export default function RegisterPage() {
             ))}
             <button className="btn btn-p" type="submit" disabled={loading}
               style={{ width: '100%', justifyContent: 'center', padding: '13px', marginTop: 4 }}>
-              {loading ? <><span className="spin" /> Creating account…</> : 'Create account →'}
+              {loading ? <><span className="spin" /> Creating account…</> : 'Create account'}
             </button>
           </form>
         </div>
