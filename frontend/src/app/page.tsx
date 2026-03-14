@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const TOOLS = [
   ['💬','AI Chat','Llama 3.3 · Mixtral'],
@@ -23,7 +24,7 @@ export default function LandingPage() {
       {/* Nav */}
       <nav className="land-nav">
         <Link href="/" className="land-logo">
-          <div className="land-logo-m">⚡</div>
+          <Image src="/logo.png" alt="AI Studio Pro" width={32} height={32} style={{ borderRadius: 8 }} />
           <span className="land-logo-n">AI Studio Pro</span>
         </Link>
         <div style={{ display: 'flex', gap: 10 }}>
