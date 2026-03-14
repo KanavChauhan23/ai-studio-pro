@@ -47,7 +47,7 @@ export default function LoginPage() {
             </div>
             <button className="btn btn-p" type="submit" disabled={loading}
               style={{ width: '100%', justifyContent: 'center', padding: '13px', marginTop: 4 }}>
-              {loading ? <><span className="spin" /> Signing in…</> : 'Continue →'}
+              {loading ? <><span className="spin" /> Signing in…</> : 'Continue'}
             </button>
           </form>
         </div>
