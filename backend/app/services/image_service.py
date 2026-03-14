@@ -29,10 +29,10 @@ class ImageService:
         }
 
         dimensions = {
-            "1:1":  (1024, 1024),
-            "16:9": (1280, 720),
-            "9:16": (720, 1280),
-            "4:3":  (1024, 768),
+            "1:1":  (512, 512),
+            "16:9": (768, 432),
+            "9:16": (432, 768),
+            "4:3":  (640, 480),
         }
         w, h = dimensions.get(aspect_ratio, (1024, 1024))
 
@@ -43,7 +43,7 @@ class ImageService:
         for i in range(num_outputs):
             # Pollinations.ai — completely free, no key
             seed = 42 + i
-            url = f"https://image.pollinations.ai/prompt/{encoded}?width={w}&height={h}&seed={seed}&nologo=true&enhance=true"
+            url = f"https://image.pollinations.ai/prompt/{encoded}?width={w}&height={h}&seed={seed}&nologo=true&model=flux"
             images.append(url)
 
         return images
