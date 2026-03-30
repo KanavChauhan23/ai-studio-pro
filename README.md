@@ -6,6 +6,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=flat-square&logo=fastapi)
 ![Groq](https://img.shields.io/badge/Powered_by-Groq-orange?style=flat-square)
+![Supabase](https://img.shields.io/badge/Database-Supabase-3ECF8E?style=flat-square&logo=supabase)
 
  **Full-stack AI workspace with 17 tools — built with Next.js, FastAPI, and Groq.**
  
@@ -53,7 +54,7 @@
 **Backend**
 - [FastAPI](https://fastapi.tiangolo.com/) — Python API framework
 - [SQLAlchemy](https://www.sqlalchemy.org/) — ORM
-- [PostgreSQL](https://www.postgresql.org/) — Database
+- [PostgreSQL](https://www.postgresql.org/) via **[Supabase](https://supabase.com)** — Free cloud database (Mumbai region)
 - [Groq SDK](https://console.groq.com/) — LLM inference (ultra-fast)
 - [Pollinations.ai](https://pollinations.ai/) — Free image generation
 - [Passlib](https://passlib.readthedocs.io/) + [JWT](https://jwt.io/) — Authentication
@@ -112,11 +113,11 @@ ai-studio-pro/
 ### Prerequisites
 - Node.js 18+
 - Python 3.11+
-- PostgreSQL database
+- [Supabase](https://supabase.com) account (free) — or local PostgreSQL
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/ai-studio-pro.git
+git clone https://github.com/KanavChauhan23/ai-studio-pro.git
 cd ai-studio-pro
 ```
 
@@ -132,7 +133,7 @@ cp .env.example .env
 
 **Backend `.env`:**
 ```env
-DATABASE_URL=postgresql://user:password@localhost/ai_studio
+DATABASE_URL=postgresql://postgres.YOUR_PROJECT_ID:YOUR_PASSWORD@aws-1-ap-south-1.pooler.supabase.com:6543/postgres
 SECRET_KEY=your-super-secret-key-here
 GROQ_API_KEY=your_groq_api_key
 CORS_ORIGINS=http://localhost:3000
@@ -171,10 +172,13 @@ Visit **http://localhost:3000**
 
 ### Backend → Render
 1. Push repo to GitHub
-2. Create new **Web Service** on [render.com](https://render.com)
-3. Connect your GitHub repo
-4. Set environment variables in Render dashboard:
-   - `DATABASE_URL`
+2. Create a free PostgreSQL database on [supabase.com](https://supabase.com)
+   - Go to **Settings → Database → Connection string → Transaction pooler**
+   - Copy the URI (port 6543) — this is your `DATABASE_URL`
+3. Create new **Web Service** on [render.com](https://render.com)
+4. Connect your GitHub repo
+5. Set environment variables in Render dashboard:
+   - `DATABASE_URL` → your Supabase pooler connection string
    - `GROQ_API_KEY`
    - `SECRET_KEY`
    - `CORS_ORIGINS` → your Vercel URL
@@ -192,6 +196,7 @@ Visit **http://localhost:3000**
 | Service | Free Tier | Link |
 |---------|-----------|------|
 | **Groq** | 14,400 req/day free | [console.groq.com](https://console.groq.com) |
+| **Supabase** | 500MB DB, 2 projects free | [supabase.com](https://supabase.com) |
 | **Pollinations.ai** | Unlimited, no key needed | Built-in |
 
 ---
